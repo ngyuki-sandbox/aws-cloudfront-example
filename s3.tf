@@ -1,44 +1,20 @@
 ################################################################################
-# S3
-################################################################################
-
-resource "aws_s3_bucket" "public" {
-  bucket = "${var.prefix}-public"
-  #acl           = "public-read"
-  acl           = "private"
-  force_destroy = false
-}
-
-resource "aws_s3_bucket_policy" "public" {
-  bucket = aws_s3_bucket.public.id
-  policy = jsonencode({
-    Version : "2008-10-17",
-    Statement : [
-      {
-        Action : "s3:GetObject",
-        Effect : "Allow",
-        Resource : "${aws_s3_bucket.public.arn}/*",
-        Principal : "*",
-      },
-      {
-        Action : "s3:GetObject",
-        Effect : "Deny",
-        Resource : "${aws_s3_bucket.public.arn}/limited/*",
-        "Condition" : {
-          "NotIpAddress" : {
-            "aws:SourceIp" : var.my_ips,
-          },
-        },
-        "Principal" : "*",
-      },
-    ]
-  })
-}
+# private
 
 resource "aws_s3_bucket" "private" {
-  bucket        = "${var.prefix}-private"
-  acl           = "private"
-  force_destroy = false
+  bucket_prefix = "${var.prefix}-private"
+  force_destroy = true
+
+  timeouts {
+    create = "1m"
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "private" {
+  bucket = aws_s3_bucket.private.id
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "private" {
@@ -57,7 +33,7 @@ resource "aws_s3_bucket_policy" "private" {
       {
         Action : "s3:GetObject",
         Effect : "Allow",
-        Resource : "${aws_s3_bucket.private.arn}/pub/*",
+        Resource : "${aws_s3_bucket.private.arn}/*",
         Principal : {
           AWS : aws_cloudfront_origin_access_identity.private.iam_arn,
         },
@@ -65,50 +41,68 @@ resource "aws_s3_bucket_policy" "private" {
       {
         Action : "s3:GetObject",
         Effect : "Allow",
-        Resource : "${aws_s3_bucket.private.arn}/limited/*",
-        "Condition" : {
-          "IpAddress" : {
-            "aws:SourceIp" : var.my_ips,
+        Resource : "${aws_s3_bucket.private.arn}/*",
+        Principal : "*",
+        Condition : {
+          IpAddress : {
+            "aws:SourceIp" : var.allow_ips,
           },
         },
-        "Principal" : "*",
       },
     ]
   })
 }
 
-resource "aws_s3_bucket_object" "public" {
-  bucket  = aws_s3_bucket.public.bucket
-  key     = "index.html"
-  content = "this is public index.html"
+
+resource "aws_s3_bucket_lifecycle_configuration" "private" {
+  bucket = aws_s3_bucket.private.id
+
+  rule {
+    id     = "delete tmp files"
+    status = "Enabled"
+
+    filter {
+      prefix = "tmp/"
+    }
+
+    expiration {
+      days = 7
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 1
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+
+  rule {
+    id     = "expire old version"
+    status = "Enabled"
+
+    expiration {
+      expired_object_delete_marker = true
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 7
+    }
+  }
 }
 
-resource "aws_s3_bucket_object" "public_limited" {
-  bucket  = aws_s3_bucket.public.bucket
-  key     = "limited/index.html"
-  content = "this is public limited/index.html"
-}
+################################################################################
+# object
 
-resource "aws_s3_bucket_object" "private" {
+resource "aws_s3_object" "private" {
   bucket  = aws_s3_bucket.private.bucket
   key     = "index.html"
   content = "this is private index.html"
 }
 
-resource "aws_s3_bucket_object" "private_pub" {
+resource "aws_s3_object" "private2" {
   bucket  = aws_s3_bucket.private.bucket
-  key     = "pub/index.html"
-  content = "this is private pub/index.html"
-}
-
-resource "aws_s3_bucket_object" "private_pub_xxx" {
-  bucket  = aws_s3_bucket.private.bucket
-  key     = "pub/xxx/index.html"
-  content = "this is private pub/xxx/index.html"
-}
-
-resource "aws_s3_bucket_object" "private_limited" {
-  bucket  = aws_s3_bucket.private.bucket
-  key     = "limited/index.html"
-  content = "this is private limited/index.html"
+  key     = "private/index.html"
+  content = "this is private private/index.html"
 }

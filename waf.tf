@@ -1,11 +1,12 @@
 
 resource "aws_wafv2_web_acl" "cloudfront" {
+  provider = aws.cloudfront
+
   name        = "${var.prefix}-waf"
   description = "${var.prefix}-waf"
   scope       = "CLOUDFRONT"
 
   default_action {
-    #allow {}
     block {}
   }
 
@@ -37,9 +38,11 @@ resource "aws_wafv2_web_acl" "cloudfront" {
 }
 
 resource "aws_wafv2_ip_set" "cloudfront" {
+  provider = aws.cloudfront
+
   name               = "${var.prefix}-waf-ips"
   description        = "${var.prefix}-waf-ips"
   scope              = "CLOUDFRONT"
   ip_address_version = "IPV4"
-  addresses          = var.my_ips
+  addresses          = var.allow_ips
 }
