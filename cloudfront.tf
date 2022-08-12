@@ -1,7 +1,11 @@
 resource "aws_cloudfront_distribution" "cloudfront" {
   enabled             = true
-  retain_on_delete    = false
+  is_ipv6_enabled     = true
   default_root_object = "index.html"
+  retain_on_delete    = true
+  wait_for_deployment = false
+
+  # aliases = [] @todo
 
   origin {
     domain_name = aws_s3_bucket.public.bucket_domain_name
@@ -24,9 +28,10 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     cached_methods         = ["GET", "HEAD"]
     target_origin_id       = aws_s3_bucket.private.bucket_domain_name
     viewer_protocol_policy = "redirect-to-https"
-    min_ttl                = 0
-    default_ttl            = 0
-    max_ttl                = 0
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
 
     forwarded_values {
       query_string = false
@@ -40,17 +45,9 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     target_origin_id       = aws_s3_bucket.public.bucket_domain_name
-    viewer_protocol_policy = "redirect-to-https"
-    min_ttl                = 0
-    default_ttl            = 0
-    max_ttl                = 0
+    viewer_protocol_policy = "https-only"
 
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
+    cache_policy_id = data.aws_cloudfront_cache_policy.optimized.id
   }
 
   restrictions {
@@ -66,4 +63,8 @@ resource "aws_cloudfront_distribution" "cloudfront" {
 
 resource "aws_cloudfront_origin_access_identity" "private" {
   comment = aws_s3_bucket.private.bucket_domain_name
+}
+
+data "aws_cloudfront_cache_policy" "optimized" {
+  name = "Managed-CachingOptimized"
 }

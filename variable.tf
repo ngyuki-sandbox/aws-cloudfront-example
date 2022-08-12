@@ -1,5 +1,5 @@
 variable "profile" {
-  type    = string
+  type = string
 }
 
 variable "prefix" {
@@ -8,5 +8,5 @@ variable "prefix" {
 }
 
 variable "my_ips" {
-  type    = list(string)
+  type = list(string)
 }
