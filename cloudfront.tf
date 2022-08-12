@@ -59,6 +59,8 @@ resource "aws_cloudfront_distribution" "cloudfront" {
   viewer_certificate {
     cloudfront_default_certificate = true
   }
+
+  web_acl_id = aws_wafv2_web_acl.cloudfront.arn
 }
 
 resource "aws_cloudfront_origin_access_identity" "private" {
