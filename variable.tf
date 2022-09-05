@@ -7,7 +7,15 @@ variable "region" {
   type = string
 }
 
-variable "allow_ips" {
+variable "allow_ssh_ips" {
+  type = list(string)
+}
+
+variable "allow_s3_ips" {
+  type = list(string)
+}
+
+variable "allow_cf_ips" {
   type = list(string)
 }
 

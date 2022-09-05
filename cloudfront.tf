@@ -25,9 +25,10 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     domain_name = aws_s3_bucket.private.bucket_regional_domain_name
     origin_id   = aws_s3_bucket.private.bucket_regional_domain_name
 
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.private.cloudfront_access_identity_path
-    }
+    origin_access_control_id = aws_cloudfront_origin_access_control.private.id
+    # s3_origin_config {
+    #   origin_access_identity = aws_cloudfront_origin_access_identity.private.cloudfront_access_identity_path
+    # }
   }
 
   default_cache_behavior {
@@ -74,10 +75,18 @@ resource "aws_cloudfront_distribution" "cloudfront" {
   web_acl_id = aws_wafv2_web_acl.cloudfront.arn
 }
 
-resource "aws_cloudfront_origin_access_identity" "private" {
-  provider = aws.cloudfront
-  comment  = aws_s3_bucket.private.bucket_regional_domain_name
+# resource "aws_cloudfront_origin_access_identity" "private" {
+#   provider = aws.cloudfront
+#   comment  = aws_s3_bucket.private.bucket_regional_domain_name
+# }
+
+resource "aws_cloudfront_origin_access_control" "private" {
+  name                              = var.prefix
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
 }
+
 
 data "aws_cloudfront_cache_policy" "optimized" {
   provider = aws.cloudfront

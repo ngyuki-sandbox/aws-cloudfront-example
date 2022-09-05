@@ -44,5 +44,5 @@ resource "aws_wafv2_ip_set" "cloudfront" {
   description        = "${var.prefix}-waf-ips"
   scope              = "CLOUDFRONT"
   ip_address_version = "IPV4"
-  addresses          = var.allow_ips
+  addresses          = var.allow_cf_ips
 }

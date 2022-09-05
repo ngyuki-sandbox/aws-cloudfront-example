@@ -23,7 +23,7 @@ resource "aws_security_group" "main" {
     from_port   = 0
     to_port     = 65535
     protocol    = "tcp"
-    cidr_blocks = var.allow_ips
+    cidr_blocks = var.allow_ssh_ips
     self        = true
   }
 

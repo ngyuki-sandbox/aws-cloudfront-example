@@ -30,12 +30,25 @@ resource "aws_s3_bucket_policy" "private" {
   policy = jsonencode({
     Version : "2008-10-17",
     Statement : [
+      # {
+      #   Action : "s3:GetObject",
+      #   Effect : "Allow",
+      #   Resource : "${aws_s3_bucket.private.arn}/*",
+      #   Principal : {
+      #     AWS : aws_cloudfront_origin_access_identity.private.iam_arn,
+      #   },
+      # },
       {
         Action : "s3:GetObject",
         Effect : "Allow",
         Resource : "${aws_s3_bucket.private.arn}/*",
         Principal : {
-          AWS : aws_cloudfront_origin_access_identity.private.iam_arn,
+          Service : "cloudfront.amazonaws.com",
+        },
+        Condition : {
+          StringEquals : {
+            "aws:SourceArn" : aws_cloudfront_distribution.cloudfront.arn,
+          },
         },
       },
       {
@@ -45,7 +58,7 @@ resource "aws_s3_bucket_policy" "private" {
         Principal : "*",
         Condition : {
           IpAddress : {
-            "aws:SourceIp" : var.allow_ips,
+            "aws:SourceIp" : var.allow_s3_ips,
           },
         },
       },
