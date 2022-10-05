@@ -26,9 +26,6 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     origin_id   = aws_s3_bucket.private.bucket_regional_domain_name
 
     origin_access_control_id = aws_cloudfront_origin_access_control.private.id
-    # s3_origin_config {
-    #   origin_access_identity = aws_cloudfront_origin_access_identity.private.cloudfront_access_identity_path
-    # }
   }
 
   default_cache_behavior {
@@ -37,17 +34,8 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     viewer_protocol_policy = "https-only"
     target_origin_id       = aws_lb.main.dns_name
 
-    min_ttl     = 0
-    default_ttl = 10
-    max_ttl     = 20
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Host", "Origin"]
-      cookies {
-        forward = "all"
-      }
-    }
+    cache_policy_id = aws_cloudfront_cache_policy.nocache.id
+    origin_request_policy_id = aws_cloudfront_origin_request_policy.request.id
   }
 
   ordered_cache_behavior {
@@ -72,6 +60,11 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     minimum_protocol_version = "TLSv1.2_2021"
   }
 
+  logging_config {
+    bucket = aws_s3_bucket.log.bucket_domain_name
+    prefix = "cf/"
+  }
+
   web_acl_id = aws_wafv2_web_acl.cloudfront.arn
 }
 
@@ -87,8 +80,50 @@ resource "aws_cloudfront_origin_access_control" "private" {
   signing_protocol                  = "sigv4"
 }
 
-
 data "aws_cloudfront_cache_policy" "optimized" {
   provider = aws.cloudfront
   name     = "Managed-CachingOptimized"
+}
+
+resource "aws_cloudfront_cache_policy" "nocache" {
+  name    = "${var.prefix}-nocache"
+  comment = "${var.prefix}-nocache"
+
+  default_ttl = 0
+  max_ttl     = 0
+  min_ttl     = 0
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "none"
+    }
+
+    headers_config {
+      header_behavior = "none"
+    }
+    query_strings_config {
+      query_string_behavior = "none"
+    }
+  }
+}
+
+resource "aws_cloudfront_origin_request_policy" "request" {
+  name    = var.prefix
+  comment = var.prefix
+
+  cookies_config {
+    cookie_behavior = "all"
+  }
+  headers_config {
+    header_behavior = "allViewer"
+    # headers {
+    #   items = ["example"]
+    # }
+  }
+  query_strings_config {
+    query_string_behavior = "all"
+    # query_strings {
+    #   items = ["example"]
+    # }
+  }
 }

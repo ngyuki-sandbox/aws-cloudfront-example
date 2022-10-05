@@ -12,3 +12,9 @@ output "urls" {
     "https://${var.cf_domain_name}/",
   ]
 }
+
+output "log" {
+  value = {
+    bucket = aws_s3_bucket.log.id
+  }
+}
