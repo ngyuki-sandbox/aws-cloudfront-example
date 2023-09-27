@@ -1,20 +1,18 @@
-################################################################################
-# Output
-################################################################################
 
-output "urls" {
-  value = [
-    "https://${aws_s3_bucket.private.bucket_regional_domain_name}/index.html",
-
-    "https://${aws_cloudfront_distribution.cloudfront.domain_name}/",
-    "https://${aws_cloudfront_distribution.cloudfront.domain_name}/private/index.html",
-
-    "https://${var.cf_domain_name}/",
-  ]
+output "cloudfront" {
+  value = {
+    url = "https://${var.cf_domain_name}/"
+  }
 }
 
-output "log" {
+output "lambda" {
   value = {
-    bucket = aws_s3_bucket.log.id
+    url = module.lambda.url
+  }
+}
+
+output "ec2" {
+  value = {
+    instance_id = module.alb.instance_id
   }
 }

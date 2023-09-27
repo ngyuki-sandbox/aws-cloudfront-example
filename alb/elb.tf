@@ -1,6 +1,6 @@
 
 resource "aws_lb" "main" {
-  name               = var.prefix
+  name               = var.name
   load_balancer_type = "application"
   ip_address_type    = "ipv4"
   security_groups    = [aws_security_group.main.id]
@@ -8,7 +8,7 @@ resource "aws_lb" "main" {
 }
 
 resource "aws_lb_target_group" "main" {
-  name                 = var.prefix
+  name                 = var.name
   port                 = 80
   protocol             = "HTTP"
   deregistration_delay = "10"
@@ -32,11 +32,5 @@ resource "aws_lb_listener" "main" {
   default_action {
     target_group_arn = aws_lb_target_group.main.arn
     type             = "forward"
-  }
-}
-
-output "lb" {
-  value = {
-    dns_name = aws_lb.main.dns_name
   }
 }

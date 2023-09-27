@@ -1,8 +1,6 @@
-################################################################################
-# private
 
 resource "aws_s3_bucket" "log" {
-  bucket_prefix = "${var.prefix}-log-"
+  bucket_prefix = "${var.name}-log-"
   force_destroy = true
 
   timeouts {
@@ -10,9 +8,17 @@ resource "aws_s3_bucket" "log" {
   }
 }
 
-resource "aws_s3_bucket_acl" "log" {
+resource "aws_s3_bucket_ownership_controls" "log" {
   bucket = aws_s3_bucket.log.id
-  acl    = "private"
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+
+resource "aws_s3_bucket_acl" "log" {
+  bucket     = aws_s3_bucket.log.id
+  acl        = "private"
+  depends_on = [aws_s3_bucket_ownership_controls.log]
 }
 
 resource "aws_s3_bucket_public_access_block" "log" {

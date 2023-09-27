@@ -1,17 +1,21 @@
-variable "prefix" {
-  type    = string
-  default = "hoge"
+
+variable "name" {
+  type = string
+}
+
+variable "allowed_account_ids" {
+  type = list(string)
 }
 
 variable "region" {
   type = string
 }
 
-variable "allow_ssh_ips" {
-  type = list(string)
+variable "defailt_tags" {
+  type = map(string)
 }
 
-variable "allow_s3_ips" {
+variable "allow_ssh_ips" {
   type = list(string)
 }
 

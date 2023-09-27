@@ -2,8 +2,8 @@
 resource "aws_wafv2_web_acl" "cloudfront" {
   provider = aws.cloudfront
 
-  name        = "${var.prefix}-waf"
-  description = "${var.prefix}-waf"
+  name        = "${var.name}-waf"
+  description = "${var.name}-waf"
   scope       = "CLOUDFRONT"
 
   default_action {
@@ -12,7 +12,7 @@ resource "aws_wafv2_web_acl" "cloudfront" {
 
   visibility_config {
     cloudwatch_metrics_enabled = false
-    metric_name                = "${var.prefix}-waf"
+    metric_name                = "${var.name}-waf"
     sampled_requests_enabled   = false
   }
 
@@ -31,7 +31,7 @@ resource "aws_wafv2_web_acl" "cloudfront" {
     }
     visibility_config {
       cloudwatch_metrics_enabled = false
-      metric_name                = "${var.prefix}-waf"
+      metric_name                = "${var.name}-waf"
       sampled_requests_enabled   = false
     }
   }
@@ -40,8 +40,8 @@ resource "aws_wafv2_web_acl" "cloudfront" {
 resource "aws_wafv2_ip_set" "cloudfront" {
   provider = aws.cloudfront
 
-  name               = "${var.prefix}-waf-ips"
-  description        = "${var.prefix}-waf-ips"
+  name               = "${var.name}-waf-ips"
+  description        = "${var.name}-waf-ips"
   scope              = "CLOUDFRONT"
   ip_address_version = "IPV4"
   addresses          = var.allow_cf_ips

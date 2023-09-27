@@ -15,8 +15,8 @@ data "aws_subnets" "main" {
 }
 
 resource "aws_security_group" "main" {
-  name        = var.prefix
-  description = var.prefix
+  name        = var.name
+  description = var.name
   vpc_id      = data.aws_vpc.main.id
 
   ingress {
@@ -28,10 +28,9 @@ resource "aws_security_group" "main" {
   }
 
   ingress {
-    from_port = 80
-    to_port   = 80
-    protocol  = "tcp"
-    # cidr_blocks = ["0.0.0.0/0"]
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
     prefix_list_ids = [data.aws_ec2_managed_prefix_list.cloudfront.id]
   }
 
