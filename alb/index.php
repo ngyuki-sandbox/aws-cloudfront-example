@@ -1,3 +1,3 @@
 <?php
 session_start();
-date("Y-m-d\TH:m:s\n");
+var_dump(date("Y-m-d\TH:m:s\n"));

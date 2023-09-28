@@ -23,9 +23,8 @@ resource "aws_cloudfront_distribution" "cloudfront" {
   }
 
   origin {
-    domain_name = aws_s3_bucket.private.bucket_regional_domain_name
-    origin_id   = aws_s3_bucket.private.bucket_regional_domain_name
-
+    domain_name              = aws_s3_bucket.private.bucket_regional_domain_name
+    origin_id                = aws_s3_bucket.private.bucket_regional_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.private.id
   }
 
@@ -100,6 +99,23 @@ resource "aws_cloudfront_origin_access_control" "private" {
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
+}
+
+resource "tls_private_key" "main" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
+resource "aws_cloudfront_public_key" "main" {
+  provider    = aws.cloudfront
+  name        = var.name
+  encoded_key = tls_private_key.main.public_key_pem
+}
+
+resource "aws_cloudfront_key_group" "main" {
+  provider = aws.cloudfront
+  name     = var.name
+  items    = [aws_cloudfront_public_key.main.id]
 }
 
 data "aws_cloudfront_cache_policy" "optimized" {

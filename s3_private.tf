@@ -43,10 +43,12 @@ resource "aws_s3_bucket_policy" "private" {
       },
     ]
   })
+
+  depends_on = [aws_s3_bucket_public_access_block.private]
 }
 
-resource "aws_s3_object" "private" {
+resource "aws_s3_object" "index" {
   bucket  = aws_s3_bucket.private.bucket
-  key     = "index.html"
-  content = "this is index.html"
+  key     = "private/index.html"
+  content = "this is private/index.html"
 }
