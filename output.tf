@@ -6,6 +6,7 @@ output "cloudfront" {
       "https://${var.cf_domain_name}/${module.s3.path}",
       "https://${var.cf_domain_name}/lambda/${module.s3.path}",
     ]
+    key_pair_id = module.cloudfront.key_pair_id
   }
 }
 

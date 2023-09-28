@@ -36,3 +36,8 @@ module "lambda" {
   private_key = module.cloudfront.private_key
   cf_domain_name = var.cf_domain_name
 }
+
+resource "local_sensitive_file" "private_key" {
+  content  = module.cloudfront.private_key
+  filename = "private_key.pem"
+}
