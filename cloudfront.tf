@@ -58,6 +58,7 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     target_origin_id       = aws_s3_bucket.private.bucket_regional_domain_name
 
     cache_policy_id = data.aws_cloudfront_cache_policy.optimized.id
+    #trusted_key_groups = [ aws_cloudfront_key_group.main.id ]
   }
 
   ordered_cache_behavior {
