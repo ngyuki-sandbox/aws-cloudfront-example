@@ -1,7 +1,5 @@
 
 resource "aws_wafv2_web_acl" "cloudfront" {
-  provider = aws.cloudfront
-
   name        = "${var.name}-waf"
   description = "${var.name}-waf"
   scope       = "CLOUDFRONT"
@@ -38,8 +36,6 @@ resource "aws_wafv2_web_acl" "cloudfront" {
 }
 
 resource "aws_wafv2_ip_set" "cloudfront" {
-  provider = aws.cloudfront
-
   name               = "${var.name}-waf-ips"
   description        = "${var.name}-waf-ips"
   scope              = "CLOUDFRONT"

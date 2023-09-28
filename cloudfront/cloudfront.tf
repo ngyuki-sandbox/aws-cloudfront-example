@@ -1,7 +1,5 @@
 
 resource "aws_cloudfront_distribution" "cloudfront" {
-  provider = aws.cloudfront
-
   enabled             = true
   is_ipv6_enabled     = true
   http_version        = "http2and3"
@@ -11,8 +9,8 @@ resource "aws_cloudfront_distribution" "cloudfront" {
   aliases = [var.cf_domain_name]
 
   origin {
-    domain_name = module.alb.dns_name
-    origin_id   = module.alb.dns_name
+    domain_name = var.alb_dns_name
+    origin_id   = var.alb_dns_name
 
     custom_origin_config {
       http_port              = 80
@@ -23,14 +21,14 @@ resource "aws_cloudfront_distribution" "cloudfront" {
   }
 
   origin {
-    domain_name              = aws_s3_bucket.private.bucket_regional_domain_name
-    origin_id                = aws_s3_bucket.private.bucket_regional_domain_name
+    domain_name              = var.s3_domain_name
+    origin_id                = var.s3_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.private.id
   }
 
   origin {
-    domain_name = module.lambda.domain
-    origin_id   = module.lambda.domain
+    domain_name = var.lambda_domain_name
+    origin_id   = var.lambda_domain_name
 
     custom_origin_config {
       http_port              = 80
@@ -44,7 +42,7 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
     cached_methods         = ["GET", "HEAD"]
     viewer_protocol_policy = "https-only"
-    target_origin_id       = module.alb.dns_name
+    target_origin_id       = var.alb_dns_name
 
     cache_policy_id          = aws_cloudfront_cache_policy.nocache.id
     origin_request_policy_id = aws_cloudfront_origin_request_policy.request.id
@@ -55,7 +53,7 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     viewer_protocol_policy = "https-only"
-    target_origin_id       = aws_s3_bucket.private.bucket_regional_domain_name
+    target_origin_id       = var.s3_domain_name
 
     cache_policy_id = data.aws_cloudfront_cache_policy.optimized.id
     #trusted_key_groups = [ aws_cloudfront_key_group.main.id ]
@@ -66,7 +64,7 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     viewer_protocol_policy = "https-only"
-    target_origin_id       = module.lambda.domain
+    target_origin_id       = var.lambda_domain_name
 
     cache_policy_id = aws_cloudfront_cache_policy.nocache.id
   }
@@ -108,20 +106,17 @@ resource "tls_private_key" "main" {
 }
 
 resource "aws_cloudfront_public_key" "main" {
-  provider    = aws.cloudfront
   name        = var.name
   encoded_key = tls_private_key.main.public_key_pem
 }
 
 resource "aws_cloudfront_key_group" "main" {
-  provider = aws.cloudfront
-  name     = var.name
-  items    = [aws_cloudfront_public_key.main.id]
+  name  = var.name
+  items = [aws_cloudfront_public_key.main.id]
 }
 
 data "aws_cloudfront_cache_policy" "optimized" {
-  provider = aws.cloudfront
-  name     = "Managed-CachingOptimized"
+  name = "Managed-CachingOptimized"
 }
 
 resource "aws_cloudfront_cache_policy" "nocache" {

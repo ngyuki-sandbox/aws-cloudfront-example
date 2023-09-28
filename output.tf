@@ -1,7 +1,10 @@
 
 output "cloudfront" {
   value = {
-    url = "https://${var.cf_domain_name}/"
+    urls = [
+      "https://${var.cf_domain_name}/",
+      "https://${var.cf_domain_name}/${module.s3.path}",
+    ]
   }
 }
 

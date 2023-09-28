@@ -1,51 +1,33 @@
 
-moved {
-  from = aws_instance.server
-  to   = module.alb.aws_instance.main
-}
+module "cloudfront" {
+  source = "./cloudfront"
+  providers = {
+    aws = aws.cloudfront
+  }
 
-moved {
-  from = aws_lb_target_group_attachment.server
-  to   = module.alb.aws_lb_target_group_attachment.main
-}
-
-moved {
-  from = aws_iam_role.server
-  to   = module.alb.aws_iam_role.main
-}
-
-moved {
-  from = aws_iam_instance_profile.server
-  to   = module.alb.aws_iam_instance_profile.main
-}
-
-moved {
-  from = aws_lb.main
-  to   = module.alb.aws_lb.main
-}
-
-moved {
-  from = aws_lb_target_group.main
-  to   = module.alb.aws_lb_target_group.main
-}
-
-moved {
-  from = aws_lb_listener.main
-  to   = module.alb.aws_lb_listener.main
-}
-
-moved {
-  from = aws_security_group.main
-  to   = module.alb.aws_security_group.main
+  name               = var.name
+  zone_name          = var.zone_name
+  cf_domain_name     = var.cf_domain_name
+  allow_cf_ips       = var.allow_cf_ips
+  alb_dns_name       = module.alb.dns_name
+  s3_domain_name     = module.s3.domain
+  lambda_domain_name = module.lambda.domain
 }
 
 module "alb" {
-  source          = "./alb"
+  source = "./alb"
+
   name            = var.name
   authorized_keys = var.authorized_keys
   allow_ssh_ips   = var.allow_ssh_ips
 }
 
+module "s3" {
+  source = "./s3"
+
+  name           = "${var.name}-private"
+  cloudfront_arn = module.cloudfront.arn
+}
 
 module "lambda" {
   source = "./lambda"
