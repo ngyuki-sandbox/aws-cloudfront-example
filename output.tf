@@ -4,6 +4,7 @@ output "cloudfront" {
     urls = [
       "https://${var.cf_domain_name}/",
       "https://${var.cf_domain_name}/${module.s3.path}",
+      "https://${var.cf_domain_name}/lambda/${module.s3.path}",
     ]
   }
 }

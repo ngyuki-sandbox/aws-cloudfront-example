@@ -15,6 +15,13 @@ resource "aws_lambda_function" "main" {
   timeout          = 60
   filename         = data.archive_file.main.output_path
   source_code_hash = data.archive_file.main.output_base64sha256
+  environment {
+    variables = {
+      "KEY_PAIR_ID" = var.key_pair_id
+      "PRIVATE_KEY" = var.private_key
+      "CF_DOMAIN"   = var.cf_domain_name
+    }
+  }
 }
 
 resource "aws_lambda_function_url" "main" {
