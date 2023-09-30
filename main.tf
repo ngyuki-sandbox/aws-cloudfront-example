@@ -30,10 +30,10 @@ module "s3" {
 }
 
 module "lambda" {
-  source = "./lambda"
-  name   = var.name
-  key_pair_id = module.cloudfront.key_pair_id
-  private_key = module.cloudfront.private_key
+  source         = "./lambda"
+  name           = var.name
+  key_pair_id    = module.cloudfront.key_pair_id
+  private_key    = module.cloudfront.private_key
   cf_domain_name = var.cf_domain_name
 }
 

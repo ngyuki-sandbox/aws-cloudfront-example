@@ -55,8 +55,8 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     viewer_protocol_policy = "https-only"
     target_origin_id       = var.s3_domain_name
 
-    cache_policy_id = data.aws_cloudfront_cache_policy.optimized.id
-    trusted_key_groups = [ aws_cloudfront_key_group.main.id ]
+    cache_policy_id    = data.aws_cloudfront_cache_policy.optimized.id
+    trusted_key_groups = [aws_cloudfront_key_group.main.id]
   }
 
   ordered_cache_behavior {
