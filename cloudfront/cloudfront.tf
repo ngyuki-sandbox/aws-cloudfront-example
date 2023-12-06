@@ -45,7 +45,7 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     target_origin_id       = var.alb_dns_name
 
     cache_policy_id          = aws_cloudfront_cache_policy.nocache.id
-    origin_request_policy_id = aws_cloudfront_origin_request_policy.request.id
+    origin_request_policy_id = aws_cloudfront_origin_request_policy.none.id
   }
 
   ordered_cache_behavior {
@@ -55,8 +55,9 @@ resource "aws_cloudfront_distribution" "cloudfront" {
     viewer_protocol_policy = "https-only"
     target_origin_id       = var.s3_domain_name
 
-    cache_policy_id    = data.aws_cloudfront_cache_policy.optimized.id
-    trusted_key_groups = [aws_cloudfront_key_group.main.id]
+    cache_policy_id            = data.aws_cloudfront_cache_policy.optimized.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.cors.id
+    trusted_key_groups         = [aws_cloudfront_key_group.main.id]
   }
 
   ordered_cache_behavior {
@@ -119,6 +120,10 @@ data "aws_cloudfront_cache_policy" "optimized" {
   name = "Managed-CachingOptimized"
 }
 
+data "aws_cloudfront_response_headers_policy" "cors" {
+  name = "Managed-SimpleCORS"
+}
+
 resource "aws_cloudfront_cache_policy" "nocache" {
   name    = "${var.name}-nocache"
   comment = "${var.name}-nocache"
@@ -140,9 +145,33 @@ resource "aws_cloudfront_cache_policy" "nocache" {
   }
 }
 
-resource "aws_cloudfront_origin_request_policy" "request" {
-  name    = var.name
-  comment = var.name
+resource "aws_cloudfront_cache_policy" "origin" {
+  name    = "${var.name}-origin"
+  comment = "${var.name}-origin"
+
+  min_ttl     = 1
+  max_ttl     = 31536000
+  default_ttl = 86400
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "none"
+    }
+    headers_config {
+      header_behavior = "whitelist"
+      headers {
+        items = ["origin"]
+      }
+    }
+    query_strings_config {
+      query_string_behavior = "none"
+    }
+  }
+}
+
+resource "aws_cloudfront_origin_request_policy" "none" {
+  name    = "${var.name}-none"
+  comment = "${var.name}-none"
   cookies_config {
     cookie_behavior = "none"
   }
@@ -151,5 +180,40 @@ resource "aws_cloudfront_origin_request_policy" "request" {
   }
   query_strings_config {
     query_string_behavior = "none"
+  }
+}
+
+resource "aws_cloudfront_origin_request_policy" "origin" {
+  name    = "${var.name}-origin"
+  comment = "${var.name}-origin"
+  cookies_config {
+    cookie_behavior = "none"
+  }
+  headers_config {
+    header_behavior = "whitelist"
+    headers {
+      items = ["origin"]
+    }
+  }
+  query_strings_config {
+    query_string_behavior = "none"
+  }
+}
+
+resource "aws_cloudfront_response_headers_policy" "cors" {
+  name    = "${var.name}-cors"
+  comment = "${var.name}-cors"
+  cors_config {
+    access_control_allow_methods {
+      items = ["GET"]
+    }
+    access_control_allow_origins {
+      items = ["example.com"]
+    }
+    access_control_allow_headers {
+      items = ["*"]
+    }
+    access_control_allow_credentials = false
+    origin_override                  = true
   }
 }
